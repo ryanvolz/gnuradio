@@ -194,9 +194,6 @@ function(GR_PYTHON_INSTALL)
 
         #create install rule and add generated files to target list
         set(python_install_gen_targets ${pycfiles} ${pyofiles})
-        install(FILES ${python_install_gen_targets}
-            DESTINATION ${GR_PYTHON_INSTALL_DESTINATION}
-        )
 
     ####################################################################
     elseif(GR_PYTHON_INSTALL_DIRECTORY)
@@ -270,10 +267,6 @@ function(GR_PYTHON_INSTALL)
             # install relative to current binary dir
             file(RELATIVE_PATH pygen_path_rel "${CMAKE_CURRENT_BINARY_DIR}" "${pygen_path}")
             list(SORT pygen_path_targets)
-            install(
-                FILES ${pygen_path_targets}
-                DESTINATION "${GR_PYTHON_INSTALL_DESTINATION}/${pygen_path_rel}"
-            )
         endforeach(pygen_path)
 
     ####################################################################
@@ -345,9 +338,9 @@ function(GR_PYTHON_INSTALL)
             )
         endforeach(pyfile)
 
-    endif()
+        GR_UNIQUE_TARGET("pygen" ${python_install_gen_targets})
 
-    GR_UNIQUE_TARGET("pygen" ${python_install_gen_targets})
+    endif()
 
 endfunction(GR_PYTHON_INSTALL)
 
