@@ -27,8 +27,6 @@ private:
 public:
     fir_filter_blk_impl(int decimation, const std::vector<TAP_T>& taps);
 
-    ~fir_filter_blk_impl();
-
     void set_taps(const std::vector<TAP_T>& taps);
     std::vector<TAP_T> taps() const;
 

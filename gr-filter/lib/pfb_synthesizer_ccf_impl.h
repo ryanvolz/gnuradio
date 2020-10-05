@@ -53,8 +53,6 @@ public:
     pfb_synthesizer_ccf_impl(unsigned int numchans,
                              const std::vector<float>& taps,
                              bool twox);
-    ~pfb_synthesizer_ccf_impl();
-
     void set_taps(const std::vector<float>& taps);
     std::vector<std::vector<float>> taps() const;
     void print_taps();

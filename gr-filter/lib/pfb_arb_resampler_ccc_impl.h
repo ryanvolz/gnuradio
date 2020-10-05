@@ -31,8 +31,6 @@ public:
                                const std::vector<gr_complex>& taps,
                                unsigned int filter_size);
 
-    ~pfb_arb_resampler_ccc_impl();
-
     void forecast(int noutput_items, gr_vector_int& ninput_items_required);
 
     void set_taps(const std::vector<gr_complex>& taps);

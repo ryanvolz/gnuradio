@@ -39,7 +39,6 @@ public:
                                  const std::vector<TAP_T>& taps,
                                  double center_freq,
                                  double sampling_freq);
-    virtual ~freq_xlating_fir_filter_impl();
 
     void set_center_freq(double center_freq);
     double center_freq() const;

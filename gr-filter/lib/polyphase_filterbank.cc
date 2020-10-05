@@ -38,8 +38,6 @@ polyphase_filterbank::polyphase_filterbank(unsigned int nfilts,
     set_taps(taps);
 }
 
-polyphase_filterbank::~polyphase_filterbank() {}
-
 void polyphase_filterbank::set_taps(const std::vector<float>& taps)
 {
     unsigned int i, j;

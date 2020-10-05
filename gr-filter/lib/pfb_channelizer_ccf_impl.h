@@ -37,8 +37,6 @@ public:
                              const std::vector<float>& taps,
                              float oversample_rate);
 
-    ~pfb_channelizer_ccf_impl();
-
     void set_taps(const std::vector<float>& taps);
     void print_taps();
     std::vector<std::vector<float>> taps() const;

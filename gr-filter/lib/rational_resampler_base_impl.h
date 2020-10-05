@@ -36,8 +36,6 @@ public:
                                  unsigned decimation,
                                  const std::vector<TAP_T>& taps);
 
-    ~rational_resampler_base_impl();
-
     unsigned history() const { return d_history; }
     void set_history(unsigned history) { d_history = history; }
 
