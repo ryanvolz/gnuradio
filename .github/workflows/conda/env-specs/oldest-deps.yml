@@ -1,0 +1,9 @@
+# BUILD_NUM: 0
+name: gnuradio-dev-oldest
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - boost-cpp=1.72
+  - uhd=3.15
+  - volk=2.3

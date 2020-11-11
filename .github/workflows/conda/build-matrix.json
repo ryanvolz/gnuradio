@@ -1,0 +1,19 @@
+{
+  "include": [
+    {
+      "name": "latest-deps-linux-64",
+      "conda_lock_file": "conda-latest-deps-linux-64.lock",
+      "os": "ubuntu-latest"
+    },
+    {
+      "name": "latest-deps-osx-64",
+      "conda_lock_file": "conda-latest-deps-osx-64.lock",
+      "os": "macos-latest"
+    },
+    {
+      "name": "latest-deps-win-64",
+      "conda_lock_file": "conda-latest-deps-win-64.lock",
+      "os": "windows-latest"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+# BUILD_NUM: 0
+name: gnuradio-dev-latest
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+# specify the newest versions to build/test against, if any
+  -

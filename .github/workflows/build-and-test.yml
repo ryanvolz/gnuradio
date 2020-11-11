@@ -1,0 +1,144 @@
+name: Build and Test
+
+on: [push]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  cancel-previous:
+    name: Cancel previous runs
+    runs-on: ubuntu-latest
+    steps:
+    - uses: styfle/cancel-workflow-action@0.6.0
+      with:
+        access_token: ${{ github.token }}
+
+  read-matrix:
+    name: Read build matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+    - uses: actions/checkout@v2
+    - id: set-matrix
+      run: |
+        content=`cat .github/workflows/conda/build-matrix.json`
+        # the following lines are only required for multi line json
+        content="${content//'%'/'%25'}"
+        content="${content//$'\n'/'%0A'}"
+        content="${content//$'\r'/'%0D'}"
+        # end of optional handling for multi line json
+        echo "::set-output name=matrix::$content"
+
+  build:
+    needs: read-matrix
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.read-matrix.outputs.matrix)}}
+    env:
+      # Set useful environment variables based on the matrix parameters
+      CONDA_ENV_PATH: .github/workflows/conda/${{ matrix.conda_lock_file }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Cache conda packages
+      uses: actions/cache@v2
+      with:
+        path: ~/conda_pkgs_dir
+        key: conda-${{ matrix.name }}-${{ hashFiles(env.CONDA_ENV_PATH) }}
+        restore-keys: |
+          conda-${{ matrix.name }}-
+
+    - name: Set up conda environment
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        auto-update-conda: false
+        use-only-tar-bz2: true
+        activate-environment: gnuradio-dev
+        environment-file: ${{ env.CONDA_ENV_PATH }}
+
+    - name: Print conda info and environment package list
+      shell: bash -l {0}
+      run: |
+        conda info
+        conda list
+
+    - name: Install system dependencies
+      if: ${{ startsWith(matrix.os, 'ubuntu') }}
+      run: |
+        sudo apt-get install libgl1-mesa-dev
+
+    - name: Get number of CPU cores
+      uses: SimenB/github-actions-cpu-cores@v1
+      id: cpu-cores
+
+    - name: Cache build directory
+      uses: actions/cache@v2
+      with:
+        path: build
+        key: builddir-${{ matrix.name }}-${{ github.sha }}
+        restore-keys: |
+          builddir-${{ matrix.name }}-
+
+    #- name: Create build directory
+      #run: |
+        #cmake -E make_directory ${{ runner.workspace }}/build
+
+    #- name: Configure and build (non-Windows)
+      #if: ${{ startsWith(matrix.os, 'windows') != true }}
+      #shell: bash -l {0}
+      #working-directory: ${{ runner.workspace }}/build
+      #run: |
+        #cmake -G "Ninja" \
+            #-DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+            #-DCMAKE_PREFIX_PATH=$CONDA_PREFIX \
+            #-DLIB_SUFFIX="" \
+            #-DPYTHON_EXECUTABLE=$CONDA_PREFIX/bin/python \
+            #-DBoost_NO_BOOST_CMAKE=ON \
+            #-DGR_PYTHON_DIR=`python -c "import site; print(site.getsitepackages()[0])"` \
+            #$GITHUB_WORKSPACE
+        #cmake --build . --config $BUILD_TYPE -- -j${{ steps.cpu-cores.outputs.count }}
+
+    - name: Configure and build (non-Windows)
+      if: ${{ startsWith(matrix.os, 'windows') != true }}
+      shell: bash -l {0}
+      run: |
+        . .github/workflows/conda/build.sh
+
+    #- name: Configure and build (Windows)
+      #if: ${{ startsWith(matrix.os, 'windows') }}
+      #need to use cmd shell so that compiler activate hooks will run
+      #shell: cmd /C CALL {0}
+      #working-directory: ${{ runner.workspace }}/build
+      #run: |
+        #cmake -G "Ninja" ^
+            #-DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
+            #-DCMAKE_PREFIX_PATH="%CONDA_PREFIX%\Library\lib" ^
+            #-DPYTHON_EXECUTABLE="%CONDA_PREFIX%\python" ^
+            #-DBoost_NO_BOOST_CMAKE=ON ^
+            #-DGR_PYTHON_DIR="%CONDA_PREFIX%\Lib\site-packages" ^
+            #-DLIBCODEC2_INCLUDE_DIR="%CONDA_PREFIX%\Library\include\codec2" ^
+            #-DLIBCODEC2_LIBRARIES="%CONDA_PREFIX%\Library\lib\libcodec2.lib" ^
+            #-DMPIR_LIBRARY="%CONDA_PREFIX%\Library\lib\mpir.lib" ^
+            #-DMPIRXX_LIBRARY="%CONDA_PREFIX%\Library\lib\mpir.lib" ^
+            #-DQWT_LIBRARIES="%CONDA_PREFIX%\Library\lib\qwt.lib" ^
+            #%GITHUB_WORKSPACE%
+        #cmake --build . --config %BUILD_TYPE% -- -j${{ steps.cpu-cores.outputs.count }}
+
+    - name: Configure and build (Windows)
+      if: ${{ startsWith(matrix.os, 'windows') }}
+      # need to use cmd shell so that compiler activate hooks will run
+      shell: cmd /C CALL {0}
+      run: |
+        CALL .github\workflows\conda\build.bat
+
+    - name: Test
+      shell: bash -l {0}
+      working-directory: ${{ runner.workspace }}/build
+      run: |
+        ctest --build-config $BUILD_TYPE --output-on-failure --timeout 120 \
+            -j ${{ steps.cpu-cores.outputs.count }}

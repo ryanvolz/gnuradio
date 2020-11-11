@@ -1,0 +1,57 @@
+# BUILD_NUM: 0
+name: gnuradio-dev
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - alsa-lib  # [linux]
+  - boost-cpp
+  - click
+  - click-plugins
+  - cmake
+  - codec2
+  - cppzmq
+  - cxx-compiler
+  - fftw
+  - gtk3
+  - gsl
+  - libblas=*=*netlib
+  - libcblas=*=*netlib
+  - libice-cos6-x86_64  # [linux]
+  - libselinux-cos6-x86_64  # [linux]
+  - libsm-cos6-x86_64  # [linux]
+  - libsndfile
+  - libudev-cos6-x86_64  # [linux]
+  - libusb
+  - libx11-cos6-x86_64  # [linux]
+  - libxau-cos6-x86_64  # [linux]
+  - libxcb-cos6-x86_64  # [linux]
+  - libxdamage-cos6-x86_64  # [linux]
+  - libxext-cos6-x86_64  # [linux]
+  - libxfixes-cos6-x86_64  # [linux]
+  - libxrender-cos6-x86_64  # [linux]
+  - libxxf86vm-cos6-x86_64  # [linux]
+  - libuuid-cos6-x86_64  # [linux]
+  - log4cpp
+  - lxml
+  - mako
+  - mesa-dri-drivers-cos6-x86_64  # [linux]
+  - mesa-libgl-devel-cos6-x86_64  # [linux]
+  - mpir
+  - ninja
+  - numpy
+  - pkg-config
+  - portaudio  # [linux]
+  - pybind11
+  - pyqt
+  - pygobject
+  - python=3.8
+  - pyyaml
+  - qt
+  - qwt
+  - sdl  # [linux]
+  - sdl  # [win]
+  - six
+  - uhd
+  - volk
+  - zeromq
