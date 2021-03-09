@@ -27,7 +27,7 @@ const std::string prefix()
         return prefix;
 
     std::filesystem::path prefix_rel_lib = "@prefix_relative_to_lib@";
-    std::filesystem::path gr_runtime_lib_path = boost::dll::this_line_location().string();
+    std::filesystem::path gr_runtime_lib_path = boost::dll::this_line_location();
     // Normalize before decomposing path so result is reliable
     std::filesystem::path prefix_path =
         gr_runtime_lib_path.lexically_normal().parent_path() / prefix_rel_lib;
