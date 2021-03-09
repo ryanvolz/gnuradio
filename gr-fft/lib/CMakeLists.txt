@@ -20,6 +20,8 @@ target_link_libraries(gnuradio-fft PUBLIC
   gnuradio-runtime
   fftw3f::fftw3f
   Volk::volk
+  PRIVATE
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>
 )
 
 target_include_directories(gnuradio-fft

@@ -84,6 +84,8 @@ endif(MSVC)
 target_link_libraries(gnuradio-fec PUBLIC
     gnuradio-runtime
     gnuradio-blocks
+  PRIVATE
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>
 )
 
 # Only include the LDPC work if we have GSL installed
