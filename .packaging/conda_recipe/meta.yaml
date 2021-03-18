@@ -10,6 +10,7 @@ source:
 
 build:
   number: 0
+  skip: true  # [py!=38]
   entry_points:   # [win]
     - gnuradio-companion = gnuradio.grc.main:main  # [win]
     - gr_filter_design = gnuradio.filter.filter_design:main  # [win]
