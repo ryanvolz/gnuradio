@@ -7,7 +7,7 @@
 # To update the generated conda CI files after a change here or in the recipe,
 # or because of updates to conda-smithy, run
 #
-#   conda-smithy rerender -c auto
+#   conda-smithy rerender --feedstock_config .conda-forge.yml -c auto
 #
 # which will automatically commit any changes.
 # ***** RUN THE ABOVE TO CHECK FOR UPDATES WHENEVER EDITS ARE MADE HERE *****
