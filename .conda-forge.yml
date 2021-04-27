@@ -26,6 +26,8 @@
 # documentation on possible keys and values.
 
 clone_depth: 0
+github_actions:
+  store_build_artifacts: true
 provider:
   linux: github_actions
   osx: github_actions
