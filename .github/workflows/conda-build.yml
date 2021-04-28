@@ -13,14 +13,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - CONFIG: linux_64_python3.8.____cpython
+          - CONFIG: linux_64_numpy1.17python3.8.____cpython
+            SHORT_CONFIG: linux_64_numpy1.17python3.8.____cpython
             UPLOAD_PACKAGES: True
             DOCKER_IMAGE: quay.io/condaforge/linux-anvil-comp7
             os: ubuntu
-          - CONFIG: win_64_python3.8.____cpython
+          - CONFIG: win_64_numpy1.17python3.8.____cpython
+            SHORT_CONFIG: win_64_numpy1.17python3.8.____cpython
             UPLOAD_PACKAGES: True
             os: windows
-          - CONFIG: osx_64_python3.8.____cpython
+          - CONFIG: osx_64_numpy1.17python3.8.____cpython
+            SHORT_CONFIG: osx_64_numpy1.17python3.8.____cpython
             UPLOAD_PACKAGES: True
             os: macos
     steps:
@@ -91,3 +94,67 @@ jobs:
         UPLOAD_ON_BRANCH: master
         BINSTAR_TOKEN: ${{ secrets.BINSTAR_TOKEN }}
       if: matrix.os == 'windows'
+    - name: Prepare conda build artifacts
+      id: prepare-artifacts
+      shell: bash
+      if: ${{ always() }}
+      env:
+        CONFIG: ${{ matrix.CONFIG }}
+        SHORT_CONFIG: ${{ matrix.SHORT_CONFIG }}
+        OS: ${{ matrix.os }}
+      run: |
+        set -x
+
+        # Use different prefix for successful and failed build artifacts
+        # so random failures don't prevent rebuilds from creating artifacts.
+        JOB_STATUS="${{ job.status }}"
+        if [ $JOB_STATUS == "failure" ]; then
+          ARTIFACT_PREFIX="conda_artifacts"
+        else
+          ARTIFACT_PREFIX="conda_pkgs"
+        fi
+
+        # Set the artifact name, specialized for this particular job run.
+        ARTIFACT_NAME="${ARTIFACT_PREFIX}_${GITHUB_RUN_ID}_${CONFIG}"
+        if [[ ${#ARTIFACT_NAME} -gt 80 ]]; then
+          ARTIFACT_NAME="${ARTIFACT_PREFIX}_${GITHUB_RUN_ID}_${SHORT_CONFIG}"
+        fi
+        echo "::set-output name=ARTIFACT_NAME::$ARTIFACT_NAME"
+
+        # Check that the conda-build directory exists for archiving.
+        if [ $OS == "macos" ]; then
+          ARTIFACT_DIR="${MINIFORGE_HOME:-${HOME}/miniforge3}/conda-bld/"
+        elif [ $OS == "windows" ]; then
+          ARTIFACT_DIR="${CONDA//\\//}/conda-bld/"
+        else
+          ARTIFACT_DIR="build_artifacts/"
+        fi
+        if [ ! -d "$ARTIFACT_DIR" ]; then
+          echo "conda-build directory does not exist" 1>&2
+          exit 1
+        fi
+        echo "::set-output name=ARTIFACT_PATH::$ARTIFACT_DIR"
+
+        if [ $JOB_STATUS == "failure" ]; then
+          # Create a zip archive to use as the artifact.
+          # (zip is not available on Windows container)
+          # (7z is not present on macOS, mangled as part of Homebrew)
+          ARTIFACT_ZIP="${ARTIFACT_NAME}.zip"
+          if [ $OS == "windows" ]; then
+            7z a "$ARTIFACT_ZIP" "$ARTIFACT_DIR" '-xr!.git/' '-xr!_*_env*/' '-xr!*_cache/'
+          else
+            cd "$ARTIFACT_DIR"
+            zip -r -y -q "$GITHUB_WORKSPACE/$ARTIFACT_ZIP" . -x '*.git/*' '*_*_env*/*' '*_cache/*'
+          fi
+          echo "::set-output name=ARTIFACT_PATH::$ARTIFACT_ZIP"
+        fi
+      continue-on-error: true
+
+    - name: Store conda build artifacts
+      uses: actions/upload-artifact@v2
+      if: ${{ always() && steps.prepare-artifacts.outcome == 'success' }}
+      with:
+        name: ${{ steps.prepare-artifacts.outputs.ARTIFACT_NAME }}
+        path: ${{ steps.prepare-artifacts.outputs.ARTIFACT_PATH }}
+        retention-days: 14
+      continue-on-error: true
